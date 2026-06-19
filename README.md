@@ -10,3 +10,9 @@ path.
 
 See [Activation Audit: Park - 2026-06-18](docs/reports/2026-06-18-activation-audit-park.md)
 for the current evidence record.
+
+## Included Governance Assets
+
+- Issue templates and PR template defaults
+- Organization-level workflows
+- [README standards (canonical)](README_STANDARDS.md)
