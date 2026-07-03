@@ -24,6 +24,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 import urllib.request
 from pathlib import Path
@@ -53,9 +54,23 @@ def preserved_hub_block(existing: str) -> str:
     return ""
 
 
+def _essay_count(projection: str) -> str | None:
+    """The SSOT essay count, read from the projection body (e.g. '65 published essays')."""
+    m = re.search(r"(\d[\d,]*)\+?\s+published essays", projection)
+    return m.group(1) if m else None
+
+
 def compose(projection: str, existing: str) -> str:
     body = projection.rstrip("\n")
     hub = preserved_hub_block(existing)
+    if hub:
+        # The portfolio-hub link label ("[N Essays](...)") carries an essay count
+        # drawn from the SAME SSOT as the body. Normalize it to the projected count
+        # so the page can never show two different essay numbers — the whole page
+        # is one derive-never-pin projection, hub included.
+        n = _essay_count(projection)
+        if n:
+            hub = re.sub(r"\[\d[\d,]*\+?\s+Essays\]", f"[{n} Essays]", hub)
     return body + ("\n" + hub if hub else "\n")
 
 
