@@ -18,7 +18,7 @@ _System-wide registry, governance rules, and cross-organ coordination_
 
 **171 repositories &bull; 988K+ words of documentation &bull; 10 GitHub organizations &bull; 65 published essays**
 
-**[Read the essays →](https://organvm-v-logos.github.io/public-process/)**
+**[Read the essays →](https://organvm.github.io/public-process/)**
 
 </div>
 
@@ -62,7 +62,7 @@ ORGAN-I produces epistemological frameworks, recursive models, and ontological s
 **The governance layer operates orthogonally:**
 
 - **ORGAN-IV (Taxis)** manages cross-organ orchestration: dependency resolution, promotion state machines, and agentic routing infrastructure.
-- **ORGAN-V (Logos)** publishes the public process — essays and methodology documents that make the system's construction visible. [Read them here.](https://organvm-v-logos.github.io/public-process/)
+- **ORGAN-V (Logos)** publishes the public process — essays and methodology documents that make the system's construction visible. [Read them here.](https://organvm.github.io/public-process/)
 - **ORGAN-VI (Koinonia)** provides community infrastructure — reading groups, salon spaces, and collaborative forums.
 - **ORGAN-VII (Kerygma)** handles outbound distribution — POSSE syndication (Mastodon + Discord verified), announcements, and audience development.
 - **ORGAN-VIII (Meta)** is the umbrella coordination layer — the map of the territory.
@@ -108,7 +108,7 @@ If you are exploring this system for the first time, start here:
 
 - **[agentic-titan](https://github.com/organvm-iv-taxis/agentic-titan)** — The orchestration layer. An agentic routing and governance system that coordinates work across the entire organ network. Start here if you care about systems architecture.
 
-- **[public-process](https://github.com/organvm-v-logos/public-process)** — The methodology. Essays and reflections on building creative infrastructure in public. Start here if you care about how and why this system exists. **[Read online →](https://organvm-v-logos.github.io/public-process/)**
+- **[public-process](https://github.com/organvm-v-logos/public-process)** — The methodology. Essays and reflections on building creative infrastructure in public. Start here if you care about how and why this system exists. **[Read online →](https://organvm.github.io/public-process/)**
 
 ## Portfolio Context
 
@@ -149,7 +149,7 @@ Built by [@4444j99](https://github.com/4444J99).
 
 **Explore the System**
 
-[Portfolio](https://4444j99.github.io/portfolio/) · [System Directory](https://4444j99.github.io/portfolio/directory/) · [65 Essays](https://organvm-v-logos.github.io/public-process/) · [Knowledge Base](https://organvm-i-theoria.github.io/my-knowledge-base/) · [Consult](https://4444j99.github.io/portfolio/consult/)
+[Portfolio](https://organvm.github.io/portfolio/) · [System Directory](https://organvm.github.io/portfolio/directory/) · [65 Essays](https://organvm.github.io/public-process/) · [Knowledge Base](https://organvm.github.io/portfolio/projects/knowledge-base/) · [Consult](https://organvm.github.io/portfolio/consult/)
 
 </div>
 <!-- PORTFOLIO-HUB-END -->
