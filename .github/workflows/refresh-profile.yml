@@ -1,0 +1,43 @@
+name: Refresh Profile
+
+# The org profile is a projection of the corpus (which owns the organ taxonomy
+# and live metrics). Pull the rendered projection and commit it if it changed.
+# Pull model — no cross-org token needed (public raw URL), mirroring how the
+# portfolio fetches system-metrics.json at build time.
+
+on:
+  schedule:
+    - cron: '30 6 * * *'  # daily, just after the corpus metrics-refresh (06:00 UTC)
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/refresh-profile.py
+      - .github/workflows/refresh-profile.yml
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Pull projected profile from corpus
+        run: python3 scripts/refresh-profile.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- profile/README.md; then
+            echo "No profile changes"
+          else
+            git add profile/README.md
+            git commit -m "chore: refresh profile from corpus projection"
+            git push
+          fi
