@@ -16,9 +16,9 @@ _System-wide registry, governance rules, and cross-organ coordination_
 [![Organ VI — Community](https://img.shields.io/badge/VI-Community-20B2AA)](https://github.com/organvm-vi-koinonia)
 [![Organ VII — Marketing](https://img.shields.io/badge/VII-Marketing-FF1493)](https://github.com/organvm-vii-kerygma)
 
-**171 repositories &bull; 988K+ words of documentation &bull; 10 GitHub organizations &bull; 65 published essays**
+**171 repositories &bull; 991K+ words of documentation &bull; 10 GitHub organizations &bull; 65 published essays**
 
-**[Read the essays →](https://organvm.github.io/public-process/)**
+**[Read the essays →](https://organvm-v-logos.github.io/public-process/)**
 
 </div>
 
@@ -62,7 +62,7 @@ ORGAN-I produces epistemological frameworks, recursive models, and ontological s
 **The governance layer operates orthogonally:**
 
 - **ORGAN-IV (Taxis)** manages cross-organ orchestration: dependency resolution, promotion state machines, and agentic routing infrastructure.
-- **ORGAN-V (Logos)** publishes the public process — essays and methodology documents that make the system's construction visible. [Read them here.](https://organvm.github.io/public-process/)
+- **ORGAN-V (Logos)** publishes the public process — essays and methodology documents that make the system's construction visible. [Read them here.](https://organvm-v-logos.github.io/public-process/)
 - **ORGAN-VI (Koinonia)** provides community infrastructure — reading groups, salon spaces, and collaborative forums.
 - **ORGAN-VII (Kerygma)** handles outbound distribution — POSSE syndication (Mastodon + Discord verified), announcements, and audience development.
 - **ORGAN-VIII (Meta)** is the umbrella coordination layer — the map of the territory.
@@ -108,7 +108,7 @@ If you are exploring this system for the first time, start here:
 
 - **[agentic-titan](https://github.com/organvm-iv-taxis/agentic-titan)** — The orchestration layer. An agentic routing and governance system that coordinates work across the entire organ network. Start here if you care about systems architecture.
 
-- **[public-process](https://github.com/organvm-v-logos/public-process)** — The methodology. Essays and reflections on building creative infrastructure in public. Start here if you care about how and why this system exists. **[Read online →](https://organvm.github.io/public-process/)**
+- **[public-process](https://github.com/organvm-v-logos/public-process)** — The methodology. Essays and reflections on building creative infrastructure in public. Start here if you care about how and why this system exists. **[Read online →](https://organvm-v-logos.github.io/public-process/)**
 
 ## Portfolio Context
 
@@ -120,7 +120,7 @@ This system exists at the intersection of several disciplines that rarely meet:
 
 - **Technical execution** — Data pipelines, browser extensions, SaaS platforms, agentic orchestration, and CI/CD automation. The commercial organ alone contains 32 repositories spanning multiple technology stacks.
 
-- **Documentation as craft** — Over 988K+ words of portfolio-grade documentation and 65 published essays, written to be read by humans, not just parsed by machines. Every README is a demonstration of communicative precision.
+- **Documentation as craft** — Over 991K+ words of portfolio-grade documentation and 65 published essays, written to be read by humans, not just parsed by machines. Every README is a demonstration of communicative precision.
 
 The organvm system is a proof of concept for a specific thesis: that creative work, theoretical inquiry, and commercial execution can be coordinated within a single coherent architecture — and that the architecture itself can be made legible, navigable, and beautiful.
 
@@ -137,7 +137,7 @@ Built by [@4444j99](https://github.com/4444J99).
 *Theory becomes art. Art becomes product. The whole becomes legible.*
 
 
-<sub>Metrics synced from the live registry · last refresh 2026-07-03. This profile is generated — every figure derives from repo-registry.json + system-metrics.json.</sub>
+<sub>Metrics synced from the live registry · last refresh 2026-07-04. This profile is generated — every figure derives from repo-registry.json + system-metrics.json.</sub>
 
 </div>
 
