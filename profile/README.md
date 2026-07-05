@@ -16,7 +16,7 @@ _System-wide registry, governance rules, and cross-organ coordination_
 [![Organ VI — Community](https://img.shields.io/badge/VI-Community-20B2AA)](https://github.com/organvm-vi-koinonia)
 [![Organ VII — Marketing](https://img.shields.io/badge/VII-Marketing-FF1493)](https://github.com/organvm-vii-kerygma)
 
-**171 repositories &bull; 991K+ words of documentation &bull; 10 GitHub organizations &bull; 65 published essays**
+**172 repositories &bull; 991K+ words of documentation &bull; 10 GitHub organizations &bull; 65 published essays**
 
 **[Read the essays →](https://organvm-v-logos.github.io/public-process/)**
 
@@ -45,7 +45,7 @@ The meta-organvm organization is the umbrella layer: the vantage point from whic
 | VII | **Marketing** (κήρυγμα) | Marketing | [organvm-vii-kerygma](https://github.com/organvm-vii-kerygma) | 6 | 0F / 3S / 2I | *Early development* |
 | VIII | **Meta** (μετά (meta)) | Meta | [meta-organvm](https://github.com/meta-organvm) | 14 | 2F / 10S / 2I | *You are here* |
 
-<sub>Showcase counts are public repositories in the 8 core organs (sum 144). The 171 system total spans all 10 organizations — including Personal / Liminal, Process Sequence Governance (5 repos) — plus public forks. F = flagship, S = standard, I = infrastructure.</sub>
+<sub>Showcase counts are public repositories in the 8 core organs (sum 144). The 172 system total spans all 10 organizations — including Personal / Liminal, Process Sequence Governance (5 repos) — plus public forks. F = flagship, S = standard, I = infrastructure.</sub>
 
 ## System Architecture
 
@@ -114,7 +114,7 @@ If you are exploring this system for the first time, start here:
 
 This system exists at the intersection of several disciplines that rarely meet:
 
-- **Systems architecture** — 10 organizations, 171 repositories, explicit dependency graphs, promotion state machines, and governance automation. The infrastructure demonstrates fluency with distributed systems thinking applied to creative production.
+- **Systems architecture** — 10 organizations, 172 repositories, explicit dependency graphs, promotion state machines, and governance automation. The infrastructure demonstrates fluency with distributed systems thinking applied to creative production.
 
 - **Creative practice** — Generative art, interactive theatre, recursive epistemology, and metasystemic design. The work is not decorative; it is structurally integrated with the theoretical and commercial layers.
 
@@ -137,7 +137,7 @@ Built by [@4444j99](https://github.com/4444J99).
 *Theory becomes art. Art becomes product. The whole becomes legible.*
 
 
-<sub>Metrics synced from the live registry · last refresh 2026-07-04. This profile is generated — every figure derives from repo-registry.json + system-metrics.json.</sub>
+<sub>Metrics synced from the live registry · last refresh 2026-07-05. This profile is generated — every figure derives from repo-registry.json + system-metrics.json.</sub>
 
 </div>
 
