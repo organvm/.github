@@ -15,16 +15,22 @@ jobs:
     steps:
       - uses: actions/stale@v10
         with:
+          # This universe NEVER auto-closes. "If it was ever asked for it was
+          # wanted" — every issue/PR is preserved and evolved, never closed or
+          # dismissed. The stale label is an INFORMATIONAL signal only.
           stale-issue-message: >
-            This issue has been automatically marked as stale because it has not
-            had recent activity. It will be closed in 14 days if no further
-            activity occurs.
+            This issue has been automatically labeled `stale` after 60 days
+            without activity. This is an informational signal only — it will
+            **not** be closed. This project never auto-closes issues; every
+            request is preserved and evolved toward its higher form. Comment or
+            remove the label to clear it.
           stale-pr-message: >
-            This PR has been automatically marked as stale because it has not
-            had recent activity. It will be closed in 14 days if no further
-            activity occurs.
+            This PR has been automatically labeled `stale` after 60 days without
+            activity. This is an informational signal only — it will **not** be
+            closed. Rebase, comment, or remove the label to clear it.
           days-before-stale: 60
-          days-before-close: 14
+          # -1 disables the close step entirely: label, never close.
+          days-before-close: -1
           exempt-issue-labels: 'pinned,evergreen,omega,blocked'
           exempt-pr-labels: 'pinned,evergreen,work-in-progress'
           stale-issue-label: 'stale'
