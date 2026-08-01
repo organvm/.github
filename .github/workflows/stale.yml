@@ -13,7 +13,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v10
+      - uses: actions/stale@v11
         with:
           # This universe NEVER auto-closes. "If it was ever asked for it was
           # wanted" — every issue/PR is preserved and evolved, never closed or
