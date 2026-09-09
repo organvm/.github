@@ -8,8 +8,10 @@ system-metrics.json/system-snapshot.json (live totals) — and commits the resul
 to .github-template/generated/meta-organvm.profile-README.md.
 
 This script fetches that rendered projection and writes it to profile/README.md.
-Pull model: no cross-org token, mirroring how the portfolio fetches the corpus's
-system-metrics.json at build time. Nothing here decides framing or pins a number
+Pull model: the configured source must be readable by this execution environment.
+A private corpus is unavailable through its unauthenticated raw URL; unavailable
+source content is an error, never evidence of projection parity.
+Nothing here decides framing or pins a number
 — every figure is whatever the corpus published.
 
 The one thing we PRESERVE is the <!-- PORTFOLIO-HUB-START -->..<!-- ..-END -->
@@ -19,6 +21,9 @@ so we re-attach it rather than clobber it.
 Usage:
     python3 scripts/refresh-profile.py            # write profile/README.md if changed
     python3 scripts/refresh-profile.py --check    # exit 1 if it would change (CI drift gate)
+
+Exit codes: 0 = observed parity or successful update; 1 = observed drift in
+check mode; 2 = source unavailable or invalid (profile remains unchanged).
 """
 
 from __future__ import annotations
@@ -82,13 +87,13 @@ def main() -> int:
 
     try:
         projection = fetch(args.source)
-    except Exception as exc:  # network/transient — never wedge the beat
-        print(f"WARNING: could not fetch projection ({exc}); leaving profile unchanged", file=sys.stderr)
-        return 0
+    except Exception as exc:
+        print(f"UNAVAILABLE: could not fetch projection ({exc}); leaving profile unchanged", file=sys.stderr)
+        return 2
 
     if not projection.strip() or "# meta-" not in projection:
-        print("WARNING: projection looks empty/invalid; leaving profile unchanged", file=sys.stderr)
-        return 0
+        print("INVALID: projection looks empty/invalid; leaving profile unchanged", file=sys.stderr)
+        return 2
 
     existing = PROFILE_PATH.read_text() if PROFILE_PATH.exists() else ""
     desired = compose(projection, existing)

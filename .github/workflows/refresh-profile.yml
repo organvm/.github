@@ -2,8 +2,9 @@ name: Refresh Profile
 
 # The org profile is a projection of the corpus (which owns the organ taxonomy
 # and live metrics). Pull the rendered projection and commit it if it changed.
-# Pull model — no cross-org token needed (public raw URL), mirroring how the
-# portfolio fetches system-metrics.json at build time.
+# The configured source must be accessible to this execution environment.
+# An unavailable/private source fails the refresh and prevents the commit step;
+# it is not an observed match and does not authorize copying private content.
 
 on:
   schedule:
