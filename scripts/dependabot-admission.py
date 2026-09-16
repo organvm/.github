@@ -2,11 +2,13 @@
 """One bounded read-only Actions-update admission; never waits or merges."""
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
 import urllib.request
 import time
+
 from pathlib import Path
 from urllib.parse import quote
 
@@ -18,7 +20,7 @@ class Hold(ValueError):
 class Reader:
     def __init__(self):
         self.deadline = time.monotonic() + 90
-        self.remaining = 9
+        self.remaining = 12
 
     def __call__(self, path):
         remaining = self.deadline - time.monotonic()
@@ -150,7 +152,121 @@ def assess(read, repo, number, head, ecosystem, update_type):
     return result
 
 
+
+def verified_metadata(read, repo, number, head):
+    """Derive only signed Dependabot patch/minor metadata; never trust labels.
+
+    Verification contract reviewed against fetch-metadata v3 at
+    25dd0e34f4fe68f24cc83900b1fe3fe149efef98. Require the entire bounded
+    commit list to be verified bot commits, stronger than first-commit-only.
+    """
+    pr = read(f"repos/{repo}/pulls/{number}")
+    identity(pr, repo, number, head)
+    if not pr["head"].get("ref", "").startswith("dependabot/github_actions/"):
+        raise Hold("METADATA_ECOSYSTEM_UNMEASURED")
+    commits = read(f"repos/{repo}/pulls/{number}/commits?per_page=100")
+    if (not isinstance(commits, list) or not 0 < len(commits) < 100
+            or type(pr.get("commits")) is not int or len(commits) != pr["commits"]
+            or commits[-1].get("sha") != head):
+        raise Hold("METADATA_COMMITS_INCOMPLETE")
+    for commit in commits:
+        if (commit.get("author", {}).get("login") != "dependabot[bot]"
+                or commit.get("author", {}).get("type") != "Bot"
+                or commit.get("commit", {}).get("verification", {}).get("verified") is not True):
+            raise Hold("METADATA_COMMIT_UNVERIFIED")
+    types = set()
+    for commit in commits:
+        types.update(_message_types(commit["commit"].get("message")))
+    return "github_actions", ("version-update:semver-minor" if "version-update:semver-minor" in types
+                              else "version-update:semver-patch")
+
+
+def _message_types(message):
+    import yaml
+    if not isinstance(message, str) or len(message.encode()) > 65536:
+        raise Hold("METADATA_MESSAGE_UNMEASURED")
+    fragments = re.findall(r"^---\n(.*?)^\.\.\.\n", message, re.MULTILINE | re.DOTALL)
+    if len(fragments) != 1:
+        raise Hold("METADATA_BLOCK_UNMEASURED")
+    # The trusted bot metadata is parsed as data; aliases and duplicate mapping
+    # keys cannot make an ambiguous payload appear to be a patch update.
+    class MetadataLoader(yaml.SafeLoader):
+        def construct_mapping(self, node, deep=False):
+            keys = [self.construct_object(key, deep=deep) for key, _ in node.value]
+            if any(not isinstance(key, str) for key in keys) or len(keys) != len(set(keys)):
+                raise Hold("METADATA_AMBIGUOUS")
+            return super().construct_mapping(node, deep=deep)
+    if any(isinstance(token, (yaml.tokens.AliasToken, yaml.tokens.AnchorToken))
+           for token in yaml.scan(fragments[0])):
+        raise Hold("METADATA_AMBIGUOUS")
+    data = yaml.load(fragments[0], Loader=MetadataLoader)
+    dependencies = data.get("updated-dependencies") if isinstance(data, dict) else None
+    if not isinstance(dependencies, list) or not 0 < len(dependencies) <= 100:
+        raise Hold("METADATA_DEPENDENCIES_UNMEASURED")
+    types = set()
+    for dependency in dependencies:
+        if (not isinstance(dependency, dict)
+                or not isinstance(dependency.get("dependency-name"), str)
+                or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+", dependency["dependency-name"])
+                or dependency.get("update-type") not in {"version-update:semver-patch", "version-update:semver-minor"}):
+            raise Hold("REPOSITORY_SPECIFIC_VALIDATION_REQUIRED")
+        types.add(dependency["update-type"])
+    return types
+
+
+def assess_completed_run(read, repo, run_id, expected_attempt, expected_head):
+    """Read-only trusted consumer; a completion event is only a bounded hint."""
+    result = {"status": "HOLD", "reason": "UNMEASURED", "automatic_acceptance": False}
+    try:
+        import yaml
+    except ImportError:
+        return {**result, "reason": "METADATA_PARSER_UNAVAILABLE"}
+    try:
+        # Explicit shared-template scope, distinct from the relay allowlist.
+        if (repo != "organvm/.github" or type(run_id) is not int or run_id <= 0
+                or type(expected_attempt) is not int or expected_attempt <= 0
+                or not isinstance(expected_head, str) or not re.fullmatch(r"[0-9a-f]{40}", expected_head)):
+            raise Hold("COMPLETION_SCOPE_UNCONFIGURED")
+        run = read(f"repos/{repo}/actions/runs/{run_id}")
+        refs = run.get("pull_requests")
+        if (run.get("id") != run_id or run.get("run_attempt") != expected_attempt
+                or type(run.get("run_attempt")) is not int
+                or run.get("head_sha") != expected_head or run.get("event") != "pull_request"
+                or run.get("status") != "completed" or run.get("conclusion") != "success"
+                or run.get("repository", {}).get("id") != 1154799938
+                or run.get("head_repository", {}).get("id") != 1154799938
+                or not isinstance(refs, list) or len(refs) != 1
+                or type(refs[0].get("number")) is not int or refs[0]["number"] <= 0
+                or refs[0].get("head", {}).get("sha") != expected_head):
+            raise Hold("COMPLETION_SOURCE_MISMATCH")
+        number = refs[0]["number"]
+        ecosystem, update_type = verified_metadata(read, repo, number, expected_head)
+        assessed = assess(read, repo, number, expected_head, ecosystem, update_type)
+        if assessed["status"] != "ELIGIBLE":
+            return {**assessed, "automatic_acceptance": False}
+        if assessed.get("run_id") != run_id or assessed.get("run_attempt") != expected_attempt:
+            raise Hold("COMPLETION_SUPERSEDED")
+        return {**assessed, "status": "REVIEW_READY", "pr": number,
+                "repository_id": 1154799938, "automatic_acceptance": False}
+    except Hold as error:
+        result["reason"] = str(error)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, RecursionError, yaml.YAMLError):
+        result["reason"] = "COMPLETION_UNMEASURED"
+    return result
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--completed-run", type=int)
+    parser.add_argument("--expected-attempt", type=int)
+    parser.add_argument("--expected-head")
+    parser.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY", ""))
+    args = parser.parse_args()
+    if args.completed_run is not None:
+        result = assess_completed_run(Reader(), args.repo, args.completed_run, args.expected_attempt, args.expected_head)
+        print(json.dumps(result, sort_keys=True))
+        return 0 if result["status"] == "REVIEW_READY" else 2
+    if args.expected_attempt is not None or args.expected_head is not None:
+        parser.error("expected attempt/head require --completed-run")
     try:
         number = int(os.environ.get("PR_NUMBER", "0"))
     except ValueError:
