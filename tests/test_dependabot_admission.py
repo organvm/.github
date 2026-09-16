@@ -23,7 +23,7 @@ class AdmissionTests(unittest.TestCase):
                    "base": {"sha": BASE, "ref": "main", "repo": {"id": 7, "full_name": "owner/repo"}}}
         self.protection = {"required_status_checks": {"strict": True, "checks": [{"context": "validate", "app_id": 9}]}}
         self.files = [{"filename": ".github/workflows/ci.yml", "status": "modified"}]
-        self.run = {"id": 5, "run_number": 10, "head_sha": HEAD, "event": "pull_request",
+        self.run = {"id": 5, "run_number": 10, "run_attempt": 1, "head_sha": HEAD, "event": "pull_request",
                     "path": ".github/workflows/ci-minimal.yml", "repository": {"id": 7},
                     "head_repository": {"id": 7}, "status": "completed", "conclusion": "success",
                     "pull_requests": [{"number": 1, "head": {"sha": HEAD}, "base": {"sha": BASE}}]}
@@ -32,6 +32,7 @@ class AdmissionTests(unittest.TestCase):
                           {"name": "Verify shared automation", "status": "completed", "conclusion": "success"}]}]
         self.calls = []
         self.after = None
+        self.run_after = None
 
     def read(self, path):
         self.calls.append(path)
@@ -47,6 +48,8 @@ class AdmissionTests(unittest.TestCase):
             return copy.deepcopy(self.files)
         if "/jobs?" in path:
             return {"total_count": len(self.jobs), "jobs": copy.deepcopy(self.jobs)}
+        if path == "repos/owner/repo/actions/runs/5":
+            return copy.deepcopy(self.run_after if self.run_after is not None else self.run)
         if "/runs?" in path:
             return {"total_count": 1, "workflow_runs": [copy.deepcopy(self.run)]}
         raise AssertionError(path)
@@ -61,7 +64,24 @@ class AdmissionTests(unittest.TestCase):
         result = self.assess()
         self.assertEqual(result["status"], "ELIGIBLE")
         self.assertEqual(result["base_sha"], BASE)
-        self.assertEqual(len(self.calls), 8)
+        self.assertEqual(len(self.calls), 9)
+        self.assertEqual(result["run_attempt"], 1)
+        self.assertIn("repos/owner/repo/actions/runs/5/attempts/1/jobs?per_page=100", self.calls)
+
+    def test_missing_or_malformed_attempt_holds_before_jobs(self):
+        for attempt in (None, True, 0, -1, "1"):
+            self.calls.clear()
+            self.run["run_attempt"] = attempt
+            self.assertEqual(self.assess()["reason"], "CI_ATTEMPT_UNMEASURED")
+            self.assertFalse(any("/jobs?" in path for path in self.calls))
+
+    def test_rerun_or_changed_run_after_jobs_holds(self):
+        for field, value in (("run_attempt", 2), ("run_attempt", True),
+                             ("status", "in_progress"),
+                             ("conclusion", "failure"), ("head_sha", "c" * 40),
+                             ("pull_requests", [])):
+            self.run_after = {**copy.deepcopy(self.run), field: value}
+            self.assertEqual(self.assess()["reason"], "CI_RUN_CHANGED")
 
     def test_documented_workflow_path_ref_suffix_is_accepted(self):
         for path in (".github/workflows/ci-minimal.yml@main",

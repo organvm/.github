@@ -18,7 +18,7 @@ class Hold(ValueError):
 class Reader:
     def __init__(self):
         self.deadline = time.monotonic() + 90
-        self.remaining = 8
+        self.remaining = 9
 
     def __call__(self, path):
         remaining = self.deadline - time.monotonic()
@@ -116,7 +116,10 @@ def assess(read, repo, number, head, ecosystem, update_type):
             raise Hold("CI_BASE_GENERATION_UNMEASURED")
         if run.get("status") != "completed" or run.get("conclusion") != "success":
             raise Hold("CI_NOT_SUCCESSFUL")
-        jobs = connection(read(prefix + f"/actions/runs/{run['id']}/jobs?filter=latest&per_page=100"), "jobs")
+        attempt = run.get("run_attempt")
+        if type(attempt) is not int or attempt <= 0:
+            raise Hold("CI_ATTEMPT_UNMEASURED")
+        jobs = connection(read(prefix + f"/actions/runs/{run['id']}/attempts/{attempt}/jobs?per_page=100"), "jobs")
         if not jobs or any(job.get("head_sha") != head or job.get("run_id") != run["id"]
                            or job.get("status") != "completed" or job.get("conclusion") != "success"
                            for job in jobs):
@@ -130,9 +133,16 @@ def assess(read, repo, number, head, ecosystem, update_type):
                            and step.get("status") == "completed" and step.get("conclusion") == "success"
                            for step in steps)):
             raise Hold("CI_NO_EXECUTED_PREDICATE")
+        current_run = read(prefix + f"/actions/runs/{run['id']}")
+        binding = ("id", "run_attempt", "run_number", "head_sha", "event", "path",
+                   "repository", "head_repository", "pull_requests", "status", "conclusion")
+        if (not isinstance(current_run, dict)
+                or type(current_run.get("run_attempt")) is not int
+                or any(current_run.get(key) != run.get(key) for key in binding)):
+            raise Hold("CI_RUN_CHANGED")
         if identity(read(prefix + f"/pulls/{number}"), repo, number, head) != generation:
             raise Hold("BASE_MOVED")
-        result.update(status="ELIGIBLE", reason="EXACT_HEAD_ACTIONS_CI", run_id=run["id"], base_sha=generation[1])
+        result.update(status="ELIGIBLE", reason="EXACT_HEAD_ACTIONS_CI", run_id=run["id"], run_attempt=attempt, base_sha=generation[1])
     except Hold as error:
         result["reason"] = str(error)
     except (OSError, ValueError, KeyError, TypeError, AttributeError):
