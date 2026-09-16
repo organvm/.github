@@ -1,0 +1,28 @@
+# Reviewable template. Installation under .github/workflows is separately gated.
+name: Dependency completion hint
+on:
+  workflow_run:
+    workflows: [CI Minimal]
+    types: [completed]
+permissions:
+  contents: read
+jobs:
+  observe:
+    if: >-
+      vars.DEPENDENCY_COMPLETION_ENABLED == 'true' &&
+      github.event.repository.id == 1154799938 &&
+      github.event.workflow_run.head_repository.id == 1154799938 &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Check out trusted default-branch producer
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Publish one completion hint
+        run: python3 -I scripts/dependency-completion-hint.py --publish
+        env:
+          LIMEN_CONDUCT_URL: ${{ vars.LIMEN_CONDUCT_URL }}
+          LIMEN_DEPENDENCY_COMPLETION_OBSERVER_TOKEN: ${{ secrets.LIMEN_DEPENDENCY_COMPLETION_OBSERVER_TOKEN }}
