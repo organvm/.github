@@ -17,6 +17,13 @@ class Hold(ValueError):
     pass
 
 
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Repository moves and redirects require fresh scope verification."""
+
+    def redirect_request(self, request, response, code, message, headers, newurl):
+        return None
+
+
 class Reader:
     def __init__(self):
         self.deadline = time.monotonic() + 90
@@ -33,7 +40,7 @@ class Reader:
         if credential:
             headers["Authorization"] = "Bearer " + credential
         request = urllib.request.Request("https://api.github.com/" + path, headers=headers)
-        with urllib.request.urlopen(request, timeout=min(15, remaining)) as response:
+        with urllib.request.build_opener(NoRedirect()).open(request, timeout=min(15, remaining)) as response:
             raw = response.read(2_000_001)
         if len(raw) > 2_000_000:
             raise Hold("API_RESPONSE_LIMIT")

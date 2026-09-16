@@ -169,9 +169,33 @@ class AdmissionTests(unittest.TestCase):
     def test_read_budget_stops_before_network(self):
         reader = module.Reader()
         reader.remaining = 0
-        with patch.object(module.urllib.request, "urlopen", side_effect=AssertionError("no network")):
+        with patch.object(module.urllib.request, "build_opener", side_effect=AssertionError("no network")):
             with self.assertRaises(module.Hold):
                 reader("repos/owner/repo")
+
+    def test_credentialed_reader_refuses_redirects(self):
+        self.assertIsNone(module.NoRedirect().redirect_request(
+            None, None, 302, "move", {}, "https://elsewhere.example/"))
+        captured = {}
+        class Response:
+            def __enter__(self): return self
+            def __exit__(self, *args): return False
+            def read(self, maximum):
+                captured["maximum"] = maximum
+                return b"{}"
+        class Opener:
+            def open(self, request, timeout):
+                captured["url"] = request.full_url
+                captured["timeout"] = timeout
+                return Response()
+        def build(handler):
+            self.assertIsInstance(handler, module.NoRedirect)
+            return Opener()
+        with patch.object(module.urllib.request, "build_opener", side_effect=build):
+            self.assertEqual(module.Reader()("repos/organvm/.github"), {})
+        self.assertEqual(captured["url"], "https://api.github.com/repos/organvm/.github")
+        self.assertEqual(captured["maximum"], 2_000_001)
+        self.assertLessEqual(captured["timeout"], 15)
 
     def test_workflow_uses_trusted_base_and_exact_head_submission(self):
         data = yaml.load((ROOT / ".github/workflows/dependabot-auto-merge.yml").read_text(), Loader=yaml.BaseLoader)
