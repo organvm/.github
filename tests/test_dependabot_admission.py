@@ -63,6 +63,22 @@ class AdmissionTests(unittest.TestCase):
         self.assertEqual(result["base_sha"], BASE)
         self.assertEqual(len(self.calls), 8)
 
+    def test_documented_workflow_path_ref_suffix_is_accepted(self):
+        for path in (".github/workflows/ci-minimal.yml@main",
+                     ".github/workflows/ci-minimal.yml@refs/pull/1/merge"):
+            self.calls.clear()
+            self.run["path"] = path
+            self.assertEqual(self.assess()["status"], "ELIGIBLE")
+
+    def test_wrong_or_malformed_workflow_paths_remain_held(self):
+        for path in (None, [], ".github/workflows/ci-minimal.yml@",
+                     ".github/workflows/ci-minimal.yml@main\n",
+                     "other/.github/workflows/ci-minimal.yml@main",
+                     ".github/workflows/ci-minimal.yml.bak@main"):
+            self.calls.clear()
+            self.run["path"] = path
+            self.assertEqual(self.assess()["reason"], "CI_SOURCE_MISMATCH")
+
     def test_majors_and_other_ecosystems_do_not_read_or_launch(self):
         for args in ({"update_type": "version-update:semver-major"}, {"ecosystem": "npm"}):
             with self.subTest(args=args):

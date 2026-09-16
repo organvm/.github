@@ -102,7 +102,8 @@ def assess(read, repo, number, head, ecosystem, update_type):
             raise Hold("CI_MISSING")
         run = max(runs, key=lambda row: row["run_number"])
         if (run.get("head_sha") != head or run.get("event") != "pull_request"
-                or run.get("path") != ".github/workflows/ci-minimal.yml"
+                or not isinstance(run.get("path"), str)
+                or not re.fullmatch(r"\.github/workflows/ci-minimal\.yml(?:@[^\s]+)?", run["path"])
                 or run.get("repository", {}).get("id") != generation[0]
                 or run.get("head_repository", {}).get("id") != generation[0]
                 or type(run.get("id")) is not int):
